@@ -122,5 +122,9 @@ end
 
 add_devise
 
-git add: "."
-git commit: %Q{ -m 'spring: $ bundle exec spring binstub --all' }
+after_bundle do
+  git add: "."
+  git commit: %Q{ -m "Last template commit. spring binstubs\n\n- $ bundle exec spring binstub --all" }
+
+  append_to_file 'Gemfile', "\nfail 'TODO: Regorganize and sort this generated Gemfile.'"
+end
