@@ -41,6 +41,11 @@ add_gem('haml-rails', :default, 'haml:application_layout') do
   run "rm 'app/views/layouts/application.html.erb'"
 end
 
+add_gem 'figaro', :default do
+  run 'bundle exec figaro install'
+  append_to_readme("\n## Configured via Figaro\n\nsee: https://github.com/laserlemon/figaro")
+end
+
 after_bundle do
   git add: "."
   git commit: %Q{ -m 'Template complete.' }
