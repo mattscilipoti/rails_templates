@@ -124,6 +124,12 @@ DatabaseCleaner.clean_with :truncation
 
   add_gem 'rspec-rails', { group: non_production_groups }, 'rspec:install' do
     append_to_file('spec/spec_helper.rb', 'fail("TODO: Uncomment the suggested configuration items.")')
+    append_to_readme("\n## Specs\n\n\- `$ rspec`")
+  end
+
+  add_gem_with_query 'guard-rspec', { require: false, group: :development } do
+    run `bundle exec guard init rspec`
+    append_to_readme("\n- Autospec with `$ guard`")
   end
 
   add_database_cleaner
