@@ -1,5 +1,6 @@
 require 'pry-byebug'
 
+# For Rails 4.x, 5.x
 
 class Rails::Generators::AppGenerator
   def add_database_cleaner
