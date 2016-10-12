@@ -124,7 +124,7 @@ DatabaseCleaner.clean_with :truncation
 
   add_gem 'rspec-rails', { group: non_production_groups }, 'rspec:install' do
     append_to_file('spec/spec_helper.rb', 'fail("TODO: Uncomment the suggested configuration items.")')
-    append_to_readme("\n## Specs\n\n\- `$ rspec`")
+    append_to_readme("\n\n## Specs\n\n\- `$ rspec`")
   end
 
   add_gem_with_query 'guard-rspec', { require: false, group: :development } do
@@ -143,10 +143,15 @@ DatabaseCleaner.clean_with :truncation
 
   add_gem 'figaro' do
     run 'bundle exec figaro install'
-    append_to_readme("\n## Configured via Figaro\n\nsee: https://github.com/laserlemon/figaro")
+    append_to_readme("\n\n## Configured via Figaro\n\nsee: https://github.com/laserlemon/figaro")
   end
 
   add_devise
+
+  add_gem_with_query 'whenever', { require: false } do # manages cron
+    run `wheneverize .`
+    append_to_readme("\n\n## Cron\n\n- managed by whenever gem via `config/schedule.rb`.\n- see: https://github.com/javan/whenever")
+  end
 
   add_gem 'sandi_meter', { require: false, group: non_production_groups } # Sandi Metz' rules
 
