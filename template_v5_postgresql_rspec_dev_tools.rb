@@ -2,6 +2,23 @@ require 'pry-byebug'
 
 
 class Rails::Generators::AppGenerator
+  def add_database_cleaner
+    add_gem 'database_cleaner', { require: false, group: non_production_groups } do
+      append_to_file('db/seeds.rb',
+      %q(
+require 'database_cleaner'
+
+unless ENV['FORCE_SEED'] || Rails.env.development? || Rails.env.test?
+  fail "Safety net: If you really want to seed the '#{Rails.env}' database, use FORCE_SEED=true"
+end
+
+puts "Cleaning db, via truncation..."
+DatabaseCleaner.clean_with :truncation
+)
+      )
+    end
+  end
+
   def add_devise
     return unless yes?("Would you like to install Devise?")
 
@@ -23,108 +40,109 @@ class Rails::Generators::AppGenerator
     -# TODO: update for bootstrap, dismissable
     -#   An example: https://gist.github.com/roberto/3344628
     %section#flashMessages.row
-      -flash.each do |key, value|
-        %p.flash{class: "alert-#{key}"}= value
-    )
+    -flash.each do |key, value|
+      %p.flash{class: "alert-#{key}"}= value
+      )
 
-    git add: "."
-    git commit: %Q{ -m "devise: Install/configure environment." }
+      git add: "."
+      git commit: %Q{ -m "devise: Install/configure environment." }
 
-    model_name = ask("What would you like the user model to be called? [User]")
-    model_name = "User" if model_name.blank?
-    generate "devise", model_name
-    rails_command "db:migrate"
+      model_name = ask("What would you like the user model to be called? [User]")
+      model_name = "User" if model_name.blank?
+      generate "devise", model_name
+      rails_command "db:migrate"
 
-    git add: "."
-    git commit: %Q{ -m "devise: configure for #{model_name}" }
-  end
-
-  # adds AND commits the gem, including generator commands
-  def add_gem(gem_name, groups, generator_command=nil, &block)
-    message = "Installed"
-    case groups
-    when nil, :default
-      gem gem_name
-    else
-      gem gem_name, group: groups
+      git add: "."
+      git commit: %Q{ -m "devise: configure for #{model_name}" }
     end
 
-    run_install
+    # adds AND commits the gem, including generator commands
+    def add_gem(gem_name, gem_options={}, generator_command=nil, &block)
+      message = "Installed"
+      gem gem_name, gem_options
 
-    if generator_command || block_given?
-      message += ' and configured.'
+      run_install
+
+      if generator_command || block_given?
+        message += ' and configured.'
+      end
+
+      if generator_command
+        message += "\n\n- #{generator_command}"
+        generate generator_command
+      end
+
+      yield if block_given?
+
+      git add: "."
+      git commit: %Q{ -m "#{gem_name}: #{message}" }
     end
 
-    if generator_command
-      message += "\n\n- #{generator_command}"
+    # asks if user wants to install the gem
+    def add_gem_with_query(gem_name, gem_options={}, generator_command=nil, &block)
+      if yes?("Would you like to install #{gem_name}?")
+        add_gem(gem_name, gem_options, generator_command, &block)
+      end
+    end
+
+    def app_name
+      File.dirname(__FILE__)
+    end
+
+    def append_to_readme(message)
+      append_to_file 'README.md', message
+    end
+
+    def non_production_groups
+      [:development, :test]
+    end
+
+    def run_install
+      run 'bundle install --quiet --retry=3'
+    end
+
+    # generate, configure, and commit
+    def setup(gem_name, generator_command)
+      message = "#{gem_name}: $ rails #{generator_command}"
       generate generator_command
-    end
 
-    yield if block_given?
+      yield if block_given?
 
-    git add: "."
-    git commit: %Q{ -m "#{gem_name}: #{message}" }
-  end
-
-  # asks if user wants to install the gem
-  def add_gem_with_query(gem_name, groups, generator_command=nil, &block)
-    if yes?("Would you like to install #{gem_name}?")
-      add_gem(gem_name, groups, generator_command, &block)
+      git add: "."
+      git commit: %Q{ -m "#{message}" }
     end
   end
 
-  def app_name
-    File.dirname(__FILE__)
-  end
 
-  def append_to_readme(message)
-    append_to_file 'README.md', message
-  end
+  git :init
 
-  def run_install
-    run 'bundle install --quiet --retry=3'
-  end
-
-  # generate, configure, and commit
-  def setup(gem_name, generator_command)
-    message = "#{gem_name}: $ rails #{generator_command}"
-    generate generator_command
-
-    yield if block_given?
-
-    git add: "."
-    git commit: %Q{ -m "#{message}" }
-  end
-end
-
-non_production_groups = [:development, :test]
-
-git :init
-
-run_install
-git add: "."
-message = "Initial commit.  Generated app."
-message += "\n- $ rails #{ARGV.join(' ')}"
-git commit: %Q(-m "#{message}")
-
-add_gem 'rspec-rails', non_production_groups, 'rspec:install' do
-  append_to_file('spec/spec_helper.rb', 'fail("TODO: Uncomment the suggested configuration items.")')
-end
-
-add_gem('haml-rails', :default, 'haml:application_layout') do
-  run "rm 'app/views/layouts/application.html.erb'"
-end
-
-add_gem 'figaro', :default do
-  run 'bundle exec figaro install'
-  append_to_readme("\n## Configured via Figaro\n\nsee: https://github.com/laserlemon/figaro")
-end
-
-add_devise
-
-after_bundle do
+  run_install
   git add: "."
-  git commit: %Q{ -m "Last template commit. spring binstubs\n\n- $ bundle exec spring binstub --all" }
+  message = "Initial commit.  Generated app."
+  message += "\n- $ rails #{ARGV.join(' ')}"
+  git commit: %Q(-m "#{message}")
 
-  append_to_file 'Gemfile', "\nfail 'TODO: Regorganize and sort this generated Gemfile.'"
-end
+  add_gem 'rspec-rails', { group: non_production_groups }, 'rspec:install' do
+    append_to_file('spec/spec_helper.rb', 'fail("TODO: Uncomment the suggested configuration items.")')
+  end
+
+  add_database_cleaner
+
+  add_gem('haml-rails', {}, 'haml:application_layout') do
+    run "rm 'app/views/layouts/application.html.erb'"
+  end
+
+  add_gem 'figaro' do
+    run 'bundle exec figaro install'
+    append_to_readme("\n## Configured via Figaro\n\nsee: https://github.com/laserlemon/figaro")
+  end
+
+  add_devise
+
+
+  after_bundle do
+    git add: "."
+    git commit: %Q{ -m "Last template commit. spring binstubs\n\n- $ bundle exec spring binstub --all" }
+
+    append_to_file 'Gemfile', "\n\nfail 'TODO: Regorganize and sort this generated Gemfile.'"
+  end
