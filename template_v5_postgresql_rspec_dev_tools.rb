@@ -128,6 +128,9 @@ DatabaseCleaner.clean_with :truncation
 
   add_database_cleaner
 
+  add_gem 'pry-byebug', { platform: :mri, group: non_production_groups } # Call 'debug', 'byebug', or 'binding.pry' anywhere in the code to stop execution and get a debugger console
+  add_gem 'pry-rails', { platform: :mri, group: non_production_groups } # Rails >= 3 pry initializer (enables 'reload!' and more!)
+
   add_gem('haml-rails', {}, 'haml:application_layout') do
     run "rm 'app/views/layouts/application.html.erb'"
   end
