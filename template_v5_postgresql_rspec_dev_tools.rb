@@ -142,6 +142,9 @@ DatabaseCleaner.clean_with :truncation
 
   add_devise
 
+  add_gem 'sandi_meter', { require: false, group: non_production_groups } # Sandi Metz' rules
+
+
 
   after_bundle do
     git add: "."
