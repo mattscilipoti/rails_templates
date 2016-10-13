@@ -5,6 +5,7 @@ require 'pry-byebug'
 class Rails::Generators::AppGenerator
   def add_database_cleaner
     add_gem 'database_cleaner', { require: false, group: non_production_groups } do
+      # use %q to delay string interpolation until file is processed
       append_to_file('db/seeds.rb',
       %q(
 require 'database_cleaner'
@@ -15,12 +16,12 @@ end
 
 puts "Cleaning db, via truncation..."
 DatabaseCleaner.clean_with :truncation
-)
+      )
       )
     end
   end
 
-  def add_devise
+  def add_devise_with_query
     return unless yes?("Would you like to install Devise?")
 
     gem "devise"
@@ -35,14 +36,15 @@ DatabaseCleaner.clean_with :truncation
     route "#TODO: set root route (required by Devise)"
     route "root to: 'home#index' # req'd by devise"
 
+    # use %q to delay string interpolation until file is processed
     file 'app/views/layouts/_flash_messages.html.haml',
-    %q(
-    fail("TODO: render this partial in app/views/layouts/application.html.haml")
-    -# TODO: update for bootstrap, dismissable
-    -#   An example: https://gist.github.com/roberto/3344628
-    %section#flashMessages.row
-    -flash.each do |key, value|
-      %p.flash{class: "alert-#{key}"}= value
+      %q(
+fail("TODO: render this partial in app/views/layouts/application.html.haml")
+-# TODO: update for bootstrap, dismissable
+-#   An example: https://gist.github.com/roberto/3344628
+%section#flashMessages.row
+-flash.each do |key, value|
+  %p.flash{class: "alert-#{key}"}= value
       )
 
       git add: "."
@@ -118,6 +120,7 @@ DatabaseCleaner.clean_with :truncation
   git :init
 
   run_install
+  rails_command 'db:setup'
   git add: "."
   message = "Initial commit.  Generated app."
   message += "\n- $ rails #{ARGV.join(' ')}"
@@ -126,11 +129,6 @@ DatabaseCleaner.clean_with :truncation
   add_gem 'rspec-rails', { group: non_production_groups }, 'rspec:install' do
     append_to_file('spec/spec_helper.rb', 'fail("TODO: Uncomment the suggested configuration items.")')
     append_to_readme("\n\n## Specs\n\n\- `$ rspec`")
-  end
-
-  add_gem_with_query 'guard-rspec', { require: false, group: :development } do
-    run `bundle exec guard init rspec`
-    append_to_readme("\n- Autospec with `$ guard`")
   end
 
   add_database_cleaner
@@ -147,14 +145,19 @@ DatabaseCleaner.clean_with :truncation
     append_to_readme("\n\n## Configured via Figaro\n\nsee: https://github.com/laserlemon/figaro")
   end
 
-  add_devise
+  add_devise_with_query
+
+  add_gem_with_query 'guard-rspec', { require: false, group: :development } do
+    run `bundle exec guard init rspec`
+    append_to_readme("\n- Autospec with `$ guard`")
+  end
 
   add_gem_with_query 'whenever', { require: false } do # manages cron
     run `wheneverize .`
     append_to_readme("\n\n## Cron\n\n- managed by whenever gem via `config/schedule.rb`.\n- see: https://github.com/javan/whenever")
   end
 
-  add_gem 'meta_request', { group: non_production_groups} do # supports a Chrome extension for Rails development
+  add_gem_with_query 'meta_request', { group: non_production_groups} do # supports a Chrome extension for Rails development
     append_to_readme("\n\n## Debugging\n\n- meta_request works with rails_panel to provide a tab in Chrome Dev Tools (https://github.com/dejan/rails_panel).")
   end
 
