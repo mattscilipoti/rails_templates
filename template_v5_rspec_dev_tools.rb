@@ -3,6 +3,32 @@ require 'pry-byebug'
 # For Rails 4.x, 5.x
 
 class Rails::Generators::AppGenerator
+
+  def add_bootstrap_with_query
+    return unless yes?("Would you like to install bootstrap-sass?")
+
+    add_gem 'bootstrap-sass' do
+      unless File.exists?('app/assets/stylesheets/application.scss')
+        run 'mv app/assets/stylesheets/application.css app/assets/stylesheets/application.scss'
+      end
+      append_to_file('app/assets/stylesheets/application.scss', <<~FILE_CONTENTS
+      // "bootstrap-sprockets" must be imported before "bootstrap" and "bootstrap/variables"
+      @import "bootstrap-sprockets";
+      @import "bootstrap";
+      // TODO: we recommend converting any `*=require...` statements to @import
+      FILE_CONTENTS
+      )
+
+      append_to_file('app/assets/javascripts/application.js', <<~FILE_CONTENTS
+      fail("TODO: Move `require bootstrap-sprockets` just after jquery")
+      //= require bootstrap-sprockets
+      FILE_CONTENTS
+      )
+    end
+
+    add_gem 'simple_form', {}, 'simple_form:install --bootstrap'
+  end
+
   def add_database_cleaner
     add_gem 'database_cleaner', { require: false, group: non_production_groups } do
       # use %q to delay string interpolation until file is processed
@@ -144,6 +170,8 @@ fail("TODO: render this partial in app/views/layouts/application.html.haml")
     run 'bundle exec figaro install'
     append_to_readme("\n\n## Configured via Figaro\n\nsee: https://github.com/laserlemon/figaro")
   end
+
+  add_bootstrap_with_query
 
   add_devise_with_query
 
