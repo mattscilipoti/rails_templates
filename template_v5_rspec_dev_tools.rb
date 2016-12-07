@@ -177,6 +177,7 @@ add_bootstrap_with_query
 
 add_devise_with_query
 
+add_gem 'awesome_print', { require: false, group: non_production_groups } # pretty formatting in rails console
 
 add_gem_with_query 'guard-rspec', { require: false, group: :development } do
   run `bundle exec guard init rspec`
