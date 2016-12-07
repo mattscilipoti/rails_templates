@@ -7,7 +7,7 @@ require 'pry-byebug'
 class Rails::Generators::AppGenerator
   
   def add_bootstrap_with_query
-    return unless yes?("Would you like to install bootstrap-sass?")
+    return unless yes?("Would you like to install bootstrap-sass? (y/n)")
     
     add_gem 'bootstrap-sass' do
       unless File.exists?('app/assets/stylesheets/application.scss')
@@ -49,7 +49,7 @@ class Rails::Generators::AppGenerator
   end
   
   def add_devise_with_query
-    return unless yes?("Would you like to install Devise?")
+    return unless yes?("Would you like to install Devise? (y/n)")
     
     gem "devise"
     generate "devise:install"
@@ -111,7 +111,7 @@ class Rails::Generators::AppGenerator
   
   # asks if user wants to install the gem
   def add_gem_with_query(gem_name, gem_options={}, generator_command=nil, &block)
-    if yes?("Would you like to install #{gem_name}?")
+    if yes?("Would you like to install #{gem_name}? (y/n)")
       add_gem(gem_name, gem_options, generator_command, &block)
     end
   end
