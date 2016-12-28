@@ -184,6 +184,10 @@ add_gem_with_query 'guard-rspec', { require: false, group: :development } do
   append_to_readme("\n- Autospec with `$ guard`")
 end
 
+add_gem_with_query 'rails_db', { group: :development } do
+  append_to_readme("\n- Rails DB GUI is available at /rails/db.  This also provides `railsdb` and `railssql`.  See https://github.com/igorkasyanchuk/rails_db")
+end
+
 add_gem_with_query 'whenever', { require: false } do # manages cron
   run `wheneverize .`
   append_to_readme("\n\n## Cron\n\n- managed by whenever gem via `config/schedule.rb`.\n- see: https://github.com/javan/whenever")
