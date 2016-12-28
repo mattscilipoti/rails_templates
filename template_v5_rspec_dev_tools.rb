@@ -150,7 +150,7 @@ git :init
 run_install
 rails_command 'db:setup'
 git add: "."
-message = "Initial commit.  Generated app."
+message = "Initial commit.  Generated app.  Setup database (create, migrate, seed)."
 message += "\n- $ rails #{ARGV.join(' ')}"
 git commit: %Q(-m "#{message}")
 
@@ -173,11 +173,14 @@ add_gem 'figaro' do
   append_to_readme("\n\n## Configured via Figaro\n\nsee: https://github.com/laserlemon/figaro")
 end
 
-add_bootstrap_with_query
-
-add_devise_with_query
-
 add_gem 'awesome_print', { require: false, group: non_production_groups } # pretty formatting in rails console
+add_gem 'sandi_meter', { require: false, group: non_production_groups } # Sandi Metz' rules
+
+## >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+## Begin optional gems
+
+add_bootstrap_with_query
+add_devise_with_query
 
 add_gem_with_query 'guard-rspec', { require: false, group: :development } do
   run `bundle exec guard init rspec`
@@ -197,7 +200,6 @@ add_gem_with_query 'meta_request', { group: non_production_groups} do # supports
   append_to_readme("\n\n## Debugging\n\n- meta_request works with rails_panel to provide a tab in Chrome Dev Tools (https://github.com/dejan/rails_panel).")
 end
 
-add_gem 'sandi_meter', { require: false, group: non_production_groups } # Sandi Metz' rules
 
 
 after_bundle do
