@@ -5,10 +5,10 @@ require 'pry-byebug'
 
 # Updates AppGenerator, provides helper methods
 class Rails::Generators::AppGenerator
-  
+
   def add_bootstrap_with_query
     return unless yes?("Would you like to install bootstrap-sass? (y/n)")
-    
+
     add_gem 'bootstrap-sass' do
       unless File.exists?('app/assets/stylesheets/application.scss')
         run 'mv app/assets/stylesheets/application.css app/assets/stylesheets/application.scss'
@@ -20,49 +20,80 @@ class Rails::Generators::AppGenerator
         // TODO: we recommend converting any `*=require...` statements to @import
       FILE_CONTENTS
       append_to_file('app/assets/stylesheets/application.scss',app_stylesheet_file_contents)
-      
+
       app_javascript_file_contents = <<~FILE_CONTENTS
         fail("TODO: Move `require bootstrap-sprockets` just after jquery")
         //= require bootstrap-sprockets
       FILE_CONTENTS
       append_to_file('app/assets/javascripts/application.js', app_javascript_file_contents)
     end
-    
+
     add_gem 'simple_form', {}, 'simple_form:install --bootstrap'
   end
-  
+
+  def add_capistrano_with_query
+    return unless yes?("Would you like to install capistrano? (y/n)")
+
+    add_gem 'capistrano-rails' do
+      git_commit('capistrano: Install/generate files.') do
+        run 'bundle exec cap install' # capistrano's "generator"
+      end
+      git_commit('capistrano: configure for rails') do
+        capfile_rails_contents = <<~FILE_CONTENTS
+          # Require everything for rails (bundler, rails/assets, and rails/migrations)
+          require 'capistrano/rails'
+          # Or require just what you need
+        FILE_CONTENTS
+
+        inject_into_file 'Capfile', before: "# require 'capistrano/rvm'"  do
+          capfile_rails_contents
+        end
+        inject_into_file 'config/deploy.rb', after: /# ask .branch/ do
+          %(set :branch, ENV['BRANCH'] || :master)
+        end
+      end
+    end
+
+    if yes?("Will you deploy to passenger? (y/n)")
+      add_gem('capistrano-passenger') do
+        uncomment_lines 'Capfile',  %r(require 'capistrano/passenger)
+      end
+    end
+
+  end
+
   def add_database_cleaner
     add_gem 'database_cleaner', { require: false, group: non_production_groups } do
       # enclose heredoc marker in single tics to delay string interpolation until file is processed
       seed_file_contents = <<~'FILE_CONTENTS'
         require 'database_cleaner'
-        
+
         unless ENV['FORCE_SEED'] || Rails.env.development? || Rails.env.test?
           fail "Safety net: If you really want to seed the '#{Rails.env}' database, use FORCE_SEED=true"
         end
-        
+
         puts "Cleaning db, via truncation..."
         DatabaseCleaner.clean_with :truncation
       FILE_CONTENTS
       append_to_file('db/seeds.rb', seed_file_contents)
     end
   end
-  
+
   def add_devise_with_query
     return unless yes?("Would you like to install Devise? (y/n)")
-    
+
     gem "devise"
     generate "devise:install"
-    
+
     # follow devise configuration instructions
     environment %q(default_url_options = ENV.fetch('default_url_options', {host: 'localhost', port: 3000})), env: 'development'
     environment %q(config.action_mailer.default_url_options = default_url_options), env: 'development'
     environment %q(fail("TODO: Configure default_url_options.")), env: 'production'
     environment %q(config.action_mailer.default_url_options = {host: "http://yourwebsite.example.com"}), env: 'production'
-    
+
     route "#TODO: set root route (required by Devise)"
     route "root to: 'home#index' # req'd by devise"
-    
+
     # enclose heredoc marker in single tics to delay string interpolation until file is processed
     flash_messages_file_contents = <<~'FILE_CONTENTS'
       - fail("TODO: render this partial in app/views/layouts/application.html.haml")
@@ -71,10 +102,10 @@ class Rails::Generators::AppGenerator
       %section#flashMessages.row
       -flash.each do |key, value|
         %p.flash{class: "alert-#{key}"}= value
-        
+
     FILE_CONTENTS
     file 'app/views/layouts/_flash_messages.html.haml', flash_messages_file_contents
-      
+
     git add: '.'
     git commit: %{ -m 'devise: Install/configure environment.' }
     
@@ -86,59 +117,65 @@ class Rails::Generators::AppGenerator
     git add: '.'
     git commit: %( -m "devise: configure for #{model_name}" )
   end
-    
+
   # adds AND commits the gem, including generator commands
   def add_gem(gem_name, gem_options={}, generator_command=nil, &block)
     message = "Installed"
     gem gem_name, gem_options
-    
+
     run_install
-    
+
     if generator_command || block_given?
       message += ' and configured.'
     end
-    
+
     if generator_command
       message += "\n\n- #{generator_command}"
       generate generator_command
     end
-    
+
     yield if block_given?
-    
+
     git add: "."
     git commit: %Q{ -m "#{gem_name}: #{message}" }
   end
-  
+
   # asks if user wants to install the gem
   def add_gem_with_query(gem_name, gem_options={}, generator_command=nil, &block)
     if yes?("Would you like to install #{gem_name}? (y/n)")
       add_gem(gem_name, gem_options, generator_command, &block)
     end
   end
-  
+
   def app_name
     File.dirname(__FILE__)
   end
-  
+
   def append_to_readme(message)
     append_to_file 'README.md', message
   end
-  
+
+  def git_commit(message)
+    yield
+    git add: '.'
+    git commit: %{ -m #{message.inspect} }
+  end
+
   def non_production_groups
     [:development, :test]
   end
-  
+
   def run_install
     run 'bundle install --quiet --retry=3'
   end
-  
+
   # generate, configure, and commit
   def setup(gem_name, generator_command)
     message = "#{gem_name}: $ rails #{generator_command}"
     generate generator_command
-    
+
     yield if block_given?
-    
+
     git add: "."
     git commit: %Q{ -m "#{message}" }
   end
@@ -180,6 +217,7 @@ add_gem 'sandi_meter', { require: false, group: non_production_groups } # Sandi 
 ## Begin optional gems
 
 add_bootstrap_with_query
+add_capistrano_with_query
 add_devise_with_query
 
 add_gem_with_query 'guard-rspec', { require: false, group: :development } do
@@ -205,6 +243,6 @@ end
 after_bundle do
   git add: "."
   git commit: %Q{ -m "Last template commit. spring binstubs\n\n- $ bundle exec spring binstub --all" }
-  
+
   append_to_file 'Gemfile', "\n\nfail 'TODO: Regorganize and sort this generated Gemfile.'"
 end
