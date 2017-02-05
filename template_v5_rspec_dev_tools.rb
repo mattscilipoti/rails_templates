@@ -13,7 +13,7 @@ class Rails::Generators::AppGenerator
       unless File.exists?('app/assets/stylesheets/application.scss')
         run 'mv app/assets/stylesheets/application.css app/assets/stylesheets/application.scss'
       end
-      app_stylesheet_file_contents =  <<~FILE_CONTENTS
+      app_stylesheet_file_contents = <<~FILE_CONTENTS
         // "bootstrap-sprockets" must be imported before "bootstrap" and "bootstrap/variables"
         @import "bootstrap-sprockets";
         @import "bootstrap";
@@ -81,41 +81,38 @@ class Rails::Generators::AppGenerator
 
   def add_devise_with_query
     return unless yes?("Would you like to install Devise? (y/n)")
+    git_commit('devise: Install/configure environment.') do
+      gem "devise"
+      generate "devise:install"
 
-    gem "devise"
-    generate "devise:install"
+      # follow devise configuration instructions
+      environment %q(default_url_options = ENV.fetch('default_url_options', {host: 'localhost', port: 3000})), env: 'development'
+      environment %q(config.action_mailer.default_url_options = default_url_options), env: 'development'
+      environment %q(fail("TODO: Configure default_url_options.")), env: 'production'
+      environment %q(config.action_mailer.default_url_options = {host: "http://yourwebsite.example.com"}), env: 'production'
 
-    # follow devise configuration instructions
-    environment %q(default_url_options = ENV.fetch('default_url_options', {host: 'localhost', port: 3000})), env: 'development'
-    environment %q(config.action_mailer.default_url_options = default_url_options), env: 'development'
-    environment %q(fail("TODO: Configure default_url_options.")), env: 'production'
-    environment %q(config.action_mailer.default_url_options = {host: "http://yourwebsite.example.com"}), env: 'production'
+      route "#TODO: set root route (required by Devise)"
+      route "root to: 'home#index' # req'd by devise"
 
-    route "#TODO: set root route (required by Devise)"
-    route "root to: 'home#index' # req'd by devise"
+      # enclose heredoc marker in single tics to delay string interpolation until file is processed
+      flash_messages_file_contents = <<~'FILE_CONTENTS'
+        - fail("TODO: render this partial in app/views/layouts/application.html.haml")
+        -# TODO: update for bootstrap, dismissable
+        -#   An example: https://gist.github.com/roberto/3344628
+        %section#flashMessages.row
+        -flash.each do |key, value|
+          %p.flash{class: "alert-#{key}"}= value
 
-    # enclose heredoc marker in single tics to delay string interpolation until file is processed
-    flash_messages_file_contents = <<~'FILE_CONTENTS'
-      - fail("TODO: render this partial in app/views/layouts/application.html.haml")
-      -# TODO: update for bootstrap, dismissable
-      -#   An example: https://gist.github.com/roberto/3344628
-      %section#flashMessages.row
-      -flash.each do |key, value|
-        %p.flash{class: "alert-#{key}"}= value
+      FILE_CONTENTS
+      file 'app/views/layouts/_flash_messages.html.haml', flash_messages_file_contents
+    end
 
-    FILE_CONTENTS
-    file 'app/views/layouts/_flash_messages.html.haml', flash_messages_file_contents
-
-    git add: '.'
-    git commit: %{ -m 'devise: Install/configure environment.' }
-    
-    model_name = ask('What would you like the user model to be called? [User]')
-    model_name = 'User' if model_name.blank?
-    generate 'devise', model_name
-    rails_command 'db:migrate'
-    
-    git add: '.'
-    git commit: %( -m "devise: configure for #{model_name}" )
+    git_commit("devise: configure for #{model_name}") do
+      model_name = ask('What would you like the user model to be called? [User]')
+      model_name = 'User' if model_name.blank?
+      generate 'devise', model_name
+      rails_command 'db:migrate'
+    end
   end
 
   # adds AND commits the gem, including generator commands
@@ -155,6 +152,8 @@ class Rails::Generators::AppGenerator
     append_to_file 'README.md', message
   end
 
+  # "block" version of git commit.
+  #  Groups changes under the message describing the change.
   def git_commit(message)
     yield
     git add: '.'
