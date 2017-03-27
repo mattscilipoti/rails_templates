@@ -29,6 +29,7 @@ class Rails::Generators::AppGenerator
     end
 
     add_gem 'simple_form', {}, 'simple_form:install --bootstrap'
+    add_gem 'bh' # bootstrap helpers
   end
 
   def add_capistrano_with_query
@@ -203,11 +204,11 @@ add_gem 'pry-rails', { platform: :mri, group: non_production_groups } # Rails >=
 add_gem('haml-rails', {}, 'haml:application_layout') do
   run "rm 'app/views/layouts/application.html.erb'"
 end
-
 add_gem 'figaro' do
   run 'bundle exec figaro install'
   append_to_readme("\n\n## Configured via Figaro\n\nsee: https://github.com/laserlemon/figaro")
 end
+add_gem 'rack-heartbeat' # provides heartbeat endpoint w/o rails render stack.
 
 add_gem 'awesome_print', { require: false, group: non_production_groups } # pretty formatting in rails console
 add_gem 'sandi_meter', { require: false, group: non_production_groups } # Sandi Metz' rules
