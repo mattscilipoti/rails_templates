@@ -216,6 +216,8 @@ add_gem 'sandi_meter', { require: false, group: non_production_groups } # Sandi 
 ## >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ## Begin optional gems
 
+append_to_readme("\n\n## Optional gems")
+
 add_bootstrap_with_query
 add_capistrano_with_query
 add_devise_with_query
@@ -225,8 +227,12 @@ add_gem_with_query 'guard-rspec', { require: false, group: :development } do
   append_to_readme("\n- Autospec with `$ guard`")
 end
 
-add_gem_with_query 'rails_db', { group: :development } do
-  append_to_readme("\n- Rails DB GUI is available at /rails/db.  This also provides `railsdb` and `railssql`.  See https://github.com/igorkasyanchuk/rails_db")
+add_gem_with_query 'blazer', { group: :development } do
+  run `rails g blazer:install && rake db:migrate`
+  # append_to_file('spec/spec_helper.rb', 'fail("TODO: Uncomment the suggested configuration items.")')
+  append_to_file('config/routes.rb', 'fail("TODO: move the `mount Blazer...` code.")')
+  append_to_file('config/routes.rb', 'mount Blazer::Engine, at: "blazer"')
+  append_to_readme("\n- Blazer is a database query tool, available at /blazer.  See https://github.com/ankane/blazer")
 end
 
 add_gem_with_query 'whenever', { require: false } do # manages cron
