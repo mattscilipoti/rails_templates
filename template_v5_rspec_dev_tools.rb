@@ -74,7 +74,9 @@ class Rails::Generators::AppGenerator
         end
 
         puts "Cleaning db, via truncation..."
-        DatabaseCleaner.clean_with :truncation
+        do_not_truncate = %w[] # add tables to ignore, e.g. users
+        DatabaseCleaner.clean_with :truncation, :except => do_not_truncate
+
       FILE_CONTENTS
       append_to_file('db/seeds.rb', seed_file_contents)
     end
