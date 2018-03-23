@@ -193,9 +193,12 @@ message = "Initial commit.  Generated app.  Setup database (create, migrate, see
 message += "\n- $ rails #{ARGV.join(' ')}"
 git commit: %Q(-m "#{message}")
 
+## Spec Tools
+append_to_readme("\n\n## Specs")
+
 add_gem 'rspec-rails', { group: non_production_groups }, 'rspec:install' do
   append_to_file('spec/spec_helper.rb', 'fail("TODO: Uncomment the suggested configuration items.")')
-  append_to_readme("\n\n## Specs\n\n\- `$ rspec`")
+  append_to_readme("\n- `$ rspec`")
 end
 
 add_database_cleaner
@@ -220,12 +223,11 @@ add_gem('haml-rails', {}, 'haml:application_layout') do
 end
 add_gem 'figaro' do
   run 'bundle exec figaro install'
-  append_to_readme("\n\n## Configured via Figaro\n\nsee: https://github.com/laserlemon/figaro")
+  append_to_readme("\n\n## Configured via [Figaro](https://github.com/laserlemon/figaro)")
 end
 add_gem 'rack-heartbeat' # provides heartbeat endpoint w/o rails render stack.
 
 add_gem 'awesome_print', { require: false, group: non_production_groups } # pretty formatting in rails console
-add_gem 'sandi_meter', { require: false, group: non_production_groups } # Sandi Metz' rules
 
 ## >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ## Begin optional gems
@@ -246,7 +248,7 @@ add_gem_with_query 'blazer', { group: :development } do
   # append_to_file('spec/spec_helper.rb', 'fail("TODO: Uncomment the suggested configuration items.")')
   append_to_file('config/routes.rb', 'fail("TODO: move the `mount Blazer...` code.")')
   append_to_file('config/routes.rb', 'mount Blazer::Engine, at: "blazer"')
-  append_to_readme("\n- Blazer is a database query tool, available at /blazer.  See https://github.com/ankane/blazer")
+  append_to_readme("\n- (Blazer)[https://github.com/ankane/blazer] is a database query tool, available at /blazer.")
 end
 
 add_gem_with_query 'whenever', { require: false } do # manages cron
@@ -257,7 +259,7 @@ end
 add_gem_with_query 'meta_request', { group: non_production_groups} do # supports a Chrome extension for Rails development
   append_to_readme("\n\n## Debugging\n\n- meta_request works with rails_panel to provide a tab in Chrome Dev Tools (https://github.com/dejan/rails_panel).")
 end
-
+add_gem_with_query 'sandi_meter', { require: false, group: non_production_groups } # Sandi Metz' rules
 
 
 after_bundle do
