@@ -198,7 +198,7 @@ append_to_readme("\n\n## Specs")
 
 add_gem 'rspec-rails', { group: non_production_groups }, 'rspec:install' do
   append_to_file('spec/spec_helper.rb', 'fail("TODO: Uncomment the suggested configuration items.")')
-  append_to_readme("\n- `$ rspec`")
+  append_to_readme("\n- `$ rspec`, see: https://github.com/rspec/rspec-rails")
 end
 
 add_database_cleaner
@@ -214,7 +214,7 @@ append_to_readme("\n\n## Debugging")
 
 add_gem 'pry-byebug', { platform: :mri, group: non_production_groups } do
   # Call 'debug', 'byebug', or 'binding.pry' anywhere in the code to stop execution and get a debugger console
-  append_to_readme("\n- Both pry and debugger are supported (via pry-byebug).")
+  append_to_readme("\n- Both pry and debugger are supported (via pry-byebug).\n- add `debugger` or `binding.pry`")
 end
 add_gem 'pry-rails', { platform: :mri, group: non_production_groups } # Rails >= 3 pry initializer (enables 'reload!' and more!)
 
@@ -223,9 +223,12 @@ add_gem('haml-rails', {}, 'haml:application_layout') do
 end
 add_gem 'figaro' do
   run 'bundle exec figaro install'
-  append_to_readme("\n\n## Configured via [Figaro](https://github.com/laserlemon/figaro)")
+  append_to_readme("\n\n## Configured via [Figaro](https://github.com/laserlemon/figaro)\n- see `config/application.yml`")
 end
-add_gem 'rack-heartbeat' # provides heartbeat endpoint w/o rails render stack.
+add_gem 'rack-heartbeat' do
+   # provides heartbeat endpoint w/o rails render stack.
+   append_to_readme("\n\n## Monitoring\n- Use `/heartbeat` for app monitoring services.\n- via [rack-heartbeat](https://github.com/imajes/rack-heartbeat)")
+end
 
 add_gem 'awesome_print', { require: false, group: non_production_groups } # pretty formatting in rails console
 
@@ -248,7 +251,7 @@ add_gem_with_query 'blazer', { group: :development } do
   # append_to_file('spec/spec_helper.rb', 'fail("TODO: Uncomment the suggested configuration items.")')
   append_to_file('config/routes.rb', 'fail("TODO: move the `mount Blazer...` code.")')
   append_to_file('config/routes.rb', 'mount Blazer::Engine, at: "blazer"')
-  append_to_readme("\n- (Blazer)[https://github.com/ankane/blazer] is a database query tool, available at /blazer.")
+  append_to_readme("\n- [Blazer](https://github.com/ankane/blazer) is a database query tool, available at `/blazer`.")
 end
 
 add_gem_with_query 'whenever', { require: false } do # manages cron
