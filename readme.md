@@ -21,3 +21,10 @@ I fought to separate each install into individual commits.
 ## References
 - http://guides.rubyonrails.org/rails_application_templates.html
 - http://guides.rubyonrails.org/generators.html#application-templates
+
+## TODO:
+- [X]: add_gem supports block (minimizes need for a method for each gem)
+- [X]: improve generated readme.md
+- [ ]: list gems to be installed, including optional
+- [ ]: add linters
+- [ ]: add code analyzers

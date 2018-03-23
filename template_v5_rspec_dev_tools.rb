@@ -194,7 +194,7 @@ message += "\n- $ rails #{ARGV.join(' ')}"
 git commit: %Q(-m "#{message}")
 
 ## Spec Tools
-append_to_readme("\n\n## Specs")
+append_to_readme "\n\n## Specs"
 
 add_gem 'rspec-rails', { group: non_production_groups }, 'rspec:install' do
   append_to_file('spec/spec_helper.rb', 'fail("TODO: Uncomment the suggested configuration items.")')
@@ -203,14 +203,14 @@ end
 
 add_database_cleaner
 
-add_gem('factory_bot_rails', { require: false, group: non_production_groups }) do
+add_gem 'factory_bot_rails', { require: false, group: non_production_groups } do
   append_to_readme("\n- Factory Bot ♥ Rails, see: [Getting Started](https://github.com/thoughtbot/factory_bot/blob/master/GETTING_STARTED.md)")
 end
-add_gem('faker', { require: false, group: non_production_groups }) do
+add_gem 'faker', { require: false, group: non_production_groups } do
   append_to_readme("\n- [Faker](https://github.com/stympy/faker): generate fake data such as names, addresses, and BossaNova artists.")
 end
 
-append_to_readme("\n\n## Debugging")
+append_to_readme "\n\n## Debugging"
 
 add_gem 'pry-byebug', { platform: :mri, group: non_production_groups } do
   # Call 'debug', 'byebug', or 'binding.pry' anywhere in the code to stop execution and get a debugger console
@@ -218,9 +218,10 @@ add_gem 'pry-byebug', { platform: :mri, group: non_production_groups } do
 end
 add_gem 'pry-rails', { platform: :mri, group: non_production_groups } # Rails >= 3 pry initializer (enables 'reload!' and more!)
 
-add_gem('haml-rails', {}, 'haml:application_layout') do
+add_gem 'haml-rails', {}, 'haml:application_layout' do
   run "rm 'app/views/layouts/application.html.erb'"
 end
+
 add_gem 'figaro' do
   run 'bundle exec figaro install'
   append_to_readme("\n\n## Configured via [Figaro](https://github.com/laserlemon/figaro)\n- see `config/application.yml`")
@@ -235,7 +236,7 @@ add_gem 'awesome_print', { require: false, group: non_production_groups } # pret
 ## >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ## Begin optional gems
 
-append_to_readme("\n\n## Optional gems")
+append_to_readme "\n\n## Optional gems"
 
 add_bootstrap_with_query
 add_capistrano_with_query
