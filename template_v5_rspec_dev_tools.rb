@@ -200,7 +200,19 @@ end
 
 add_database_cleaner
 
-add_gem 'pry-byebug', { platform: :mri, group: non_production_groups } # Call 'debug', 'byebug', or 'binding.pry' anywhere in the code to stop execution and get a debugger console
+add_gem('factory_bot_rails', { require: false, group: non_production_groups }) do
+  append_to_readme("\n- Factory Bot ♥ Rails, see: [Getting Started](https://github.com/thoughtbot/factory_bot/blob/master/GETTING_STARTED.md)")
+end
+add_gem('faker', { require: false, group: non_production_groups }) do
+  append_to_readme("\n- [Faker](https://github.com/stympy/faker): generate fake data such as names, addresses, and BossaNova artists.")
+end
+
+append_to_readme("\n\n## Debugging")
+
+add_gem 'pry-byebug', { platform: :mri, group: non_production_groups } do
+  # Call 'debug', 'byebug', or 'binding.pry' anywhere in the code to stop execution and get a debugger console
+  append_to_readme("\n- Both pry and debugger are supported (via pry-byebug).")
+end
 add_gem 'pry-rails', { platform: :mri, group: non_production_groups } # Rails >= 3 pry initializer (enables 'reload!' and more!)
 
 add_gem('haml-rails', {}, 'haml:application_layout') do
