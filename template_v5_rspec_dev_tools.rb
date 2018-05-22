@@ -110,9 +110,9 @@ class Rails::Generators::AppGenerator
       file 'app/views/layouts/_flash_messages.html.haml', flash_messages_file_contents
     end
 
+    model_name = ask('What would you like the user model to be called? [User]')
+    model_name = 'User' if model_name.blank?
     git_commit("devise: configure for #{model_name}") do
-      model_name = ask('What would you like the user model to be called? [User]')
-      model_name = 'User' if model_name.blank?
       generate 'devise', model_name
       rails_command 'db:migrate'
     end
